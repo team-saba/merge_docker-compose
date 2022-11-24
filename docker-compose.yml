@@ -1,0 +1,78 @@
+version: "3.7"
+services:
+  back:
+    image: a1234/back:latest
+    container_name: back
+    build: ./back
+    working_dir: /app/back 
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    ports:
+     - "8002:8002"
+    env_file:
+      - ./back/.env
+    networks:
+      - bridge
+
+  front: 
+    image: a1234/front:latest
+    container_name: front 
+    build: ./front
+    working_dir: /app/front
+    ports: 
+      - "3000:3000"
+    networks:
+      - bridge
+
+  nginx:
+    image: nginx:1.21.5-alpine
+    ports:
+      - 80:80
+    volumes:
+      - ./proxy/nginx.conf:/etc/nginx/nginx.conf
+    container_name: myweb-proxy
+    depends_on:
+      - front
+      - back
+    networks:
+      - bridge
+
+  clair:
+    restart: always
+    image: quay.io/projectquay/clair:4.5.0
+    volumes:
+      - ./back/clair/config.yaml:/config/config.yaml
+    ports:
+      - "6060:6060"
+    depends_on:
+      - postgres
+
+  postgres:
+    image: postgres:15-alpine
+    volumes:
+      - ./clair/db:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: clair
+      POSTGRES_USER: clair
+      POSTGRES_PASSWORD: password
+
+  mongodb:
+    image: mongo
+    restart: always
+    container_name: saba-json-mongo
+    ports: 
+    - "27017:27017"
+    volumes:
+    - ./Mongodb/data:/data/db
+
+  registry:
+    restart: always
+    image: registry:2
+    ports:
+      - 5000:5000
+    volumes:
+      - /path/data:/var/lib/registry
+
+networks:
+  bridge:
+    driver: bridge
