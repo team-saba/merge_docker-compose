@@ -1,6 +1,8 @@
 # merge_docker-compose
 
-### 프로젝트 파일은 뺐습니다.
+### 사용법
+ssh key를 만들면 사용하기 편합니다. [git ssh key 설정](https://www.lainyzine.com/ko/article/creating-ssh-key-for-github/)
+
 실행순서
 ```
 git clone git@github.com:team-saba/merge_docker-compose.git
